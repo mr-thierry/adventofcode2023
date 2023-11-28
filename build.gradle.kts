@@ -17,3 +17,8 @@ tasks {
         gradleVersion = "8.4"
     }
 }
+
+dependencies {
+    implementation("org.junit.jupiter:junit-jupiter:5.9.0")
+    implementation("com.willowtreeapps.assertk:assertk-jvm:0.25")
+}
