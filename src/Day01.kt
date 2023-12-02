@@ -1,140 +1,72 @@
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import org.junit.jupiter.api.Test
-import java.util.*
 
 
 class Day01 {
 
     private val day = "Day01"
 
-    private val deadEnds = mutableListOf<Point>()
-
     @Test
     fun testSolution1() {
-        assertThat(solution1(readInput("${day}_test"))).isEqualTo(31)
+        assertThat(solution1(readInput("${day}_test"))).isEqualTo(142)
     }
 
     @Test
     fun solution1() {
-        assertThat(solution1(readInput(day))).isEqualTo(408)
+        assertThat(solution1(readInput(day))).isEqualTo(54239)
     }
 
     @Test
     fun testSolution2() {
-        assertThat(solution2(readInput("${day}_test"))).isEqualTo(29)
+        assertThat(solution2(readInput("${day}_test2"))).isEqualTo(281)
     }
 
     @Test
     fun solution2() {
-        assertThat(solution2(readInput(day))).isEqualTo(399)
+        assertThat(solution2(readInput(day))).isEqualTo(55343)
     }
 
     private fun solution1(input: List<String>): Int {
-        val routes = readRoutesFromStart(input)
-        return findShortestRoute(routes, input)
+        return input.sumOf {
+            "${it[it.indexOfFirst { it.isDigit() }]}${it[it.indexOfLast { it.isDigit() }]}".toInt()
+        }
     }
+
+    private val numbersAsString = arrayOf("one", "two", "three", "four", "five", "six", "seven", "eight", "nine")
 
     private fun solution2(input: List<String>): Int {
-        val routes = readRoutesFromLowest(input)
-        return findShortestRoute(routes, input)
-    }
+        return input.sumOf { string ->
 
-    private fun findShortestRoute(routes: Queue<Route>, map: List<String>): Int {
-        val visited = mutableSetOf<Point>()
-        val maxX = map[0].toCharArray().size
+            val firstNumber = numbersAsString
+                .mapNotNull { number -> if (string.contains(number)) number else null }
+                .minByOrNull { number -> string.indexOf(number) }
 
-        while (routes.isNotEmpty()) {
-            val route = routes.poll()
+            val firstDigitIdx = string.indexOfFirst { it.isDigit() }.takeIf { it > -1 } ?: Int.MAX_VALUE
+            val firstNumberIdx = firstNumber?.let { string.indexOf(firstNumber) }?.takeIf { it > -1 } ?: Int.MAX_VALUE
 
-            val currentPosition = Point(route.dx, route.dy)
-            if (!visited.contains(currentPosition)) {
-                visited.add(currentPosition)
-
-                if (map[route.dy][route.dx] == 'E') {
-                    return route.size
-                }
-
-                //left
-                if (route.dx > 0) {
-                    walkToNextPosition(route, -1, 0, map, routes)
-                }
-
-                //top
-                if (route.dy > 0) {
-                    walkToNextPosition(route, 0, -1, map, routes)
-                }
-
-                //right
-                if (route.dx < maxX - 1) {
-                    walkToNextPosition(route, +1, 0, map, routes)
-                }
-
-                //bottom
-                if (route.dy < map.size - 1) {
-                    walkToNextPosition(route, 0, +1, map, routes)
-                }
+            val firstNumberFromString = if (firstDigitIdx < firstNumberIdx) {
+                string[firstDigitIdx].toString().toInt()
+            } else {
+                numbersAsString.indexOf(firstNumber) + 1
             }
-        }
 
-        error("Cannot find route")
-    }
+            val lastNumber = numbersAsString
+                .mapNotNull { number -> if (string.contains(number)) number else null }
+                .maxByOrNull { number -> string.lastIndexOf(number) }
 
-    private fun walkToNextPosition(
-        route: Route,
-        dx: Int,
-        dy: Int,
-        map: List<String>,
-        routes: Queue<Route>
-    ) {
-        val nextPositionX = route.dx + dx
-        val nextPositionY = route.dy + dy
+            val lastDigitIdx = string.indexOfLast { it.isDigit() }.takeIf { it > -1 } ?: -1
+            val lastNumberIdx = lastNumber?.let { string.lastIndexOf(lastNumber) }?.takeIf { it > -1 } ?: -1
 
-        val currentHeight = map[route.dy][route.dx]
-        val nextHeight = map[nextPositionY][nextPositionX]
-
-        if (height(nextHeight) - height(currentHeight) < 2) {
-            routes.add(Route(nextPositionX, nextPositionY, route.size + 1))
-        }
-    }
-
-    private fun readRoutesFromStart(input: List<String>): Queue<Route> {
-        for (y in input.indices) {
-            for (x in input[0].indices) {
-                if (input[y][x] == 'S') {
-                    val routes = LinkedList<Route>()
-                    routes.add(Route(x, y, 0))
-                    return routes
-                }
+            val lastNumberFromString = if (lastDigitIdx > lastNumberIdx) {
+                string[lastDigitIdx].toString().toInt()
+            } else {
+                numbersAsString.indexOf(lastNumber) + 1
             }
+
+            val rsult = "$firstNumberFromString$lastNumberFromString".toInt()
+            rsult
         }
-
-        error("Cannot find routes from start")
-    }
-
-
-    private fun readRoutesFromLowest(input: List<String>): Queue<Route> {
-        val routes = LinkedList<Route>()
-
-        for (y in input.indices) {
-            for (x in input[0].indices) {
-                if (height(input[y][x]) == 'a') {
-                    routes.add(Route(x, y, 0))
-                }
-            }
-        }
-
-        return routes
-    }
-
-    class Route(val dx: Int, val dy: Int, val size: Int)
-
-    data class Point(val x: Int, val y: Int)
-
-    private fun height(ch: Char) = when (ch) {
-        'S' -> 'a'
-        'E' -> 'z'
-        else -> ch
     }
 
 
